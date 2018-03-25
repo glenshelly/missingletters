@@ -50,9 +50,16 @@ run the application as follows (using quotes to surround input with spaces):
 ```
 
 
-Results Location
-----------------
-The results will overwrite the original values in slcsp.csv
+Generating Large Strings
+------------------------
+
+A helper class called StringSubmitter (in com.glen.missingletters.generator) can be used to generate
+Very Large Strings for testing.   Adjust the values at the start of the main() method to 
+vary the contents, size and quantity of the auto-generated and submitted strings.
+
+Using this approach revealed that a 100,000,000 character String took between 1 and 2 seconds to process.
+Variations depended on the number of missing letters (less letters missing resulted in faster processing time);
+
 
 
 Notes on the Implementation
@@ -69,7 +76,9 @@ Depending on the actual usage for this (a one-off script?  a production-grade ap
 following improvements might be appropriate:
 
 - Use a properties file for such things as chunkSize
-- Add additional tests
+- Spreading the chunks across various threads, as described in the comments of MissingLetter.java
+  (depending on profile of usage, and results of performance profiling)
+- Add additional unit 
 - Use a real logging system (e.g., log4j)
 
 

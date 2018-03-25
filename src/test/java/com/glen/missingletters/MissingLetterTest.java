@@ -15,7 +15,7 @@ public class MissingLetterTest {
 
         String input = "A quick brown fox jumps over the lazy dog";
         String expectedOutput = "";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
     @Test
@@ -23,7 +23,7 @@ public class MissingLetterTest {
 
         String input = "A";
         String expectedOutput = "bcdefghijklmnopqrstuvwxyz";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
     @Test
@@ -31,7 +31,7 @@ public class MissingLetterTest {
 
         String input = "";
         String expectedOutput = "abcdefghijklmnopqrstuvwxyz";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class MissingLetterTest {
 
         String input = null;
         String expectedOutput = "abcdefghijklmnopqrstuvwxyz";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class MissingLetterTest {
 
         String input = "A quick brown fox jumps over the lazy do";
         String expectedOutput = "g";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
 
@@ -56,20 +56,20 @@ public class MissingLetterTest {
 
         String input = "A slow yellow fox crawls under the proactive dog";
         String expectedOutput = "bjkmqz";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
     @Test
     public void testTheLions() {
         String input = "Lions, and tigers, and bears, oh my!";
         String expectedOutput = "cfjkpquvwxz";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 
     @Test
     public void clearDuplicateLetters() {
         String input = "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz";
         String expectedOutput = "";
-        assertEquals(expectedOutput, missingLetters.findMissing(input));
+        assertEquals(expectedOutput, missingLetters.getMissingLetters(input));
     }
 }

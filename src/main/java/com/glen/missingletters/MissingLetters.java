@@ -3,34 +3,24 @@ package com.glen.missingletters;
 /**
  * Find missing letters.
  * <p>
+ * Full details in a separate PDF description.
+ * <p>
  * Basic rules:
  * - ignore spaces, non-alphabetical, non-US-ASCII
- * - ignore case (that is, case-insensitive)
- * - return in lower-case, alphabetical order
- * - input strings from 0 to 50 characters;  but also, very large input strings
+ * - ignore case (that is, be case-insensitive)
+ * - return missing letters in lower-case, alphabetical order
  */
 public class MissingLetters {
 
-    /*
-        Ascii notes
-        LOWERCASE_BYTE_RUN
-            a : 97
-            z : 122
-
-        UPPERCASE_BYTE_RUN
-            A : 65
-            Z : 90
-    */
-
     private static final int TOTAL_POSSIBLE_LETTERS = 26;
-    private static final int LOWER_BOUND_OF_LOWERCASE_BYTE_RUN = 97;
-    private static final int UPPER_BOUND_OF_LOWERCASE_BYTE_RUN = 122;
-    private static final int LOWER_BOUND_OF_UPPERCASE_BYTE_RUN = 65;
-    private static final int UPPER_BOUND_OF_UPPERCASE_BYTE_RUN = 90;
+    private static final int LOWER_BOUND_OF_LOWERCASE_BYTE_RUN = 97;  // lowercase 'a'
+    private static final int UPPER_BOUND_OF_LOWERCASE_BYTE_RUN = 122; // lowercase 'z'
+    private static final int LOWER_BOUND_OF_UPPERCASE_BYTE_RUN = 65;  // uppercase 'A'
+    private static final int UPPER_BOUND_OF_UPPERCASE_BYTE_RUN = 90;  // uppercase 'Z'
     private static final int IS_LETTER_FOUND_INDICATOR = 1;
-    private static final int NULL_INT_INDICATOR = -1;
+    private static final int NOT_FOUND_INDICATOR = Integer.MIN_VALUE;
     private static final String ALL_LETTERS = "abcdefghijklmnopqrstuvwxyz";
-
+    private static final String EMPTY_RESULT = "";
 
 
     /**
@@ -39,7 +29,7 @@ public class MissingLetters {
      * @param args single argument expected
      */
     public static void main(String args[]) {
-        if (args == null ||  args.length < 1) {
+        if (args == null || args.length < 1) {
             throw new IllegalArgumentException("args must include a string");
         }
         MissingLetters ml = new MissingLetters();
@@ -51,7 +41,7 @@ public class MissingLetters {
 
     /**
      * Given an input String, return another String (in lowercase) of all english letters not found in the input String.
-     *
+     * <p>
      * Will check case-insensitively.
      *
      * @param inputString if null, will treat as empty string
@@ -59,9 +49,9 @@ public class MissingLetters {
      */
     public String getMissingLetters(final String inputString) {
 
-        final String result;
+        final String finalResult;
         if (inputString == null || inputString.length() == 0) {
-            result = ALL_LETTERS;
+            finalResult = ALL_LETTERS;
         } else {
 
             // The 26 spaces in this foundByteArray correspond to letters a to z
@@ -70,49 +60,48 @@ public class MissingLetters {
 
 
             /*
-            Note regarding the chunking loop below:
+            A Note regarding the chunking for-loop below:
 
             The loop below that chunks the search into 1,000 line sets does not, as currently implemented,
-            improve performance all that much; we're still moving serially across the underlying byte array.
+            improve performance; we're still moving serially across the underlying byte array.
 
-            However, should we wish to improve the current performance for Extremely Large Input Strings (say,
-            tens of Megabytes), this chunking would be a first step down that road.  A straightforward improvement
-            would be to have parallel threads take N characters each (e.g., N = 1,000), process their various chunks,
-            and then return the results.  The downside of such an approach is that we might find all 26 letters
-            rather quickly in one of the (say) 5 chunks, but due to our distribution, the other 4 chunks would chug
-            right along.
+            However, should we seek to improve the current performance for Extremely Large Input Strings (say,
+            tens of Megabytes), this chunking may be a first step down a way to do that.  A straightforward
+            attempt would involve having parallel threads take a "chunk" each, say, of 1,000 characters.
+            Each chunk would be processed separately, in separate threads, with the results returned to the original
+            thread, for proper handling.
 
-            Optimal size of chunk and optimal number of threads to handle chunks would need to be optimized through
+            The downside of such an approach is that we might find all 26 letters rather quickly in one
+            of the (say) 5 chunks, but due to our distribution, the other 4 chunks would chug right along.
+
+            Optimal size of chunk and optimal number of threads to handle chunks would need to be discerned through
             testing on a production-comparable system.
-
             */
 
-            final int chunkSize = 1000;
+            final int chunkSize = 1_000;
             final int entireStringLength = inputString.length();
             int foundCount = 0;
             for (int i = 0; (i < entireStringLength) && foundCount < TOTAL_POSSIBLE_LETTERS; i = i + chunkSize) {
-                foundCount = fillInFoundByteArray(inputString, foundByteArray, i, chunkSize, foundCount);
-                //renderMessage("after filling in. start=" + i + "; foundCount=" + foundCount);
+                foundCount = fillInFoundByteArrayForGivenChunk(inputString, foundByteArray, i, chunkSize, foundCount);
             }
-
-            result = getResultString(foundByteArray, foundCount);
+            finalResult = getResultString(foundByteArray, foundCount);
         }
-        //renderMessage("getMissingLetters: input=" + inputString + "; result=" + result);
-        return result;
+        return finalResult;
     }
 
 
     /**
      * Work on a chunk of the input String, marking off entries in the foundByteArray with found letters
-     * @param entireString the original string
+     *
+     * @param entireString   the original string
      * @param foundByteArray a 26 byte array, holding indicators of the letters we've found
-     * @param startIndex where to start searching in the String
-     * @param chunkSize how many characters to search in the String
-     * @param foundCount how many characters we've found.  When we reach 26, we can quit
-     * @return the new foundCount, after processing the specified chunk
+     * @param startIndex     where to start searching in the String
+     * @param chunkSize      how many characters to search in the String
+     * @param lettersFoundCount     how many characters we've found.  When we reach 26, we can quit
+     * @return the new lettersFoundCount, after processing the specified chunk
      */
-    private int fillInFoundByteArray(final String entireString, final byte[] foundByteArray, final int startIndex,
-                                     final int chunkSize, int foundCount) {
+    private int fillInFoundByteArrayForGivenChunk(final String entireString, final byte[] foundByteArray,
+                                                  final int startIndex, final int chunkSize, int lettersFoundCount) {
         final int entireStringLength = entireString.length();
 
         // Loop through the designated chunk of the entireString
@@ -122,50 +111,55 @@ public class MissingLetters {
 
 
             // If it's a letter, set foundBytesSlotToCheck to the corresponding 'slot' of the alphabet (0 - 25)
-            int foundByteSlotToCheck = NULL_INT_INDICATOR;
-            final boolean isLowerCase = currentByteValue >= LOWER_BOUND_OF_LOWERCASE_BYTE_RUN && currentByteValue <= UPPER_BOUND_OF_LOWERCASE_BYTE_RUN;
+            int foundByteSlot = NOT_FOUND_INDICATOR;
+            final boolean isLowerCase = currentByteValue >= LOWER_BOUND_OF_LOWERCASE_BYTE_RUN
+                    && currentByteValue <= UPPER_BOUND_OF_LOWERCASE_BYTE_RUN;
             if (isLowerCase) {
-                foundByteSlotToCheck = currentByteValue - LOWER_BOUND_OF_LOWERCASE_BYTE_RUN;
+                foundByteSlot = currentByteValue - LOWER_BOUND_OF_LOWERCASE_BYTE_RUN;
             } else {
-                final boolean isUpperCase = currentByteValue >= LOWER_BOUND_OF_UPPERCASE_BYTE_RUN && currentByteValue <= UPPER_BOUND_OF_UPPERCASE_BYTE_RUN;
+                final boolean isUpperCase = currentByteValue >= LOWER_BOUND_OF_UPPERCASE_BYTE_RUN
+                        && currentByteValue <= UPPER_BOUND_OF_UPPERCASE_BYTE_RUN;
                 if (isUpperCase) {
-                    foundByteSlotToCheck = currentByteValue - LOWER_BOUND_OF_UPPERCASE_BYTE_RUN;
+                    foundByteSlot = currentByteValue - LOWER_BOUND_OF_UPPERCASE_BYTE_RUN;
                 }
             }
 
-            if (foundByteSlotToCheck != NULL_INT_INDICATOR) {
+            if (foundByteSlot != NOT_FOUND_INDICATOR) {
 
                 /*
-                  At this point, we know it's a letter
-                  If we don't already have it marked as found, then:
-                     1. Increase the foundCount counter
-                     2. Fill the slot in the byte array indicating "found!"
+                    At this point, we know it's a letter
+                    IF we don't already have it marked as found (that is, if the 'slot' in the array is not already marked),
+                    THEN:
+                        1. Fill the slot in the byte array indicating "found!"
+                        2. Increase the lettersFoundCount counter
                 */
-                final boolean isAlreadyFound = foundByteArray[foundByteSlotToCheck] == IS_LETTER_FOUND_INDICATOR;
+                final boolean isAlreadyFound = foundByteArray[foundByteSlot] == IS_LETTER_FOUND_INDICATOR;
                 if (!isAlreadyFound) {
-                    foundCount++;
-                    foundByteArray[foundByteSlotToCheck] = IS_LETTER_FOUND_INDICATOR;
+                    foundByteArray[foundByteSlot] = IS_LETTER_FOUND_INDICATOR;
+                    lettersFoundCount++;
                 }
 
-                // If we've now found all the letters, quit the loop
-                if (foundCount == TOTAL_POSSIBLE_LETTERS) {
+                // If we've now found all the letters, there's no need to keep checking, so just quit the loop
+                if (lettersFoundCount == TOTAL_POSSIBLE_LETTERS) {
                     break;
                 }
             }
         }
-        return foundCount;
+        return lettersFoundCount;
     }
 
     /**
      * Render the final result
+     *
      * @param foundByteArray array containing indicators of which letters were found
-     * @param foundCount the number of letters that were found
-     * @return a String corresponding to the items in the given foundByteArray that are not found
+     * @param foundCount     the number of letters that were found
+     * @return a String of letters corresponding to the items in the given foundByteArray that are not marked
+     * as found
      */
     private String getResultString(final byte[] foundByteArray, final int foundCount) {
         final String result;
         if (foundCount == TOTAL_POSSIBLE_LETTERS) {
-            result = "";
+            result = EMPTY_RESULT;
         } else if (foundCount == 0) {
             result = ALL_LETTERS;
         } else {

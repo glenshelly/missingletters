@@ -12,7 +12,7 @@ Assumptions
 -----------
 The following software is assumed to be installed and available for the building and running of this application
 - Java 8
-- Maven
+- Maven, with junit dependency
  
 
 Building the application with Maven
@@ -50,15 +50,15 @@ run the application as follows (using quotes to surround input with spaces):
 ```
 
 
-Generating Large Strings
+Generating and Testing Large Strings
 ------------------------
-
 A helper class called StringSubmitter (in com.glen.missingletters.generator) can be used to generate
 Very Large Strings for testing.   Adjust the values at the start of the main() method to 
 vary the contents, size and quantity of the auto-generated and submitted strings.
 
-Using this approach revealed that a 100,000,000 character String took between 1 and 2 seconds to process.
-Variations depended on the number of missing letters (less letters missing resulted in faster processing time);
+Using this approach on a basic development laptop provided the following preliminary benchmark: 
+a 100,000,000 character String took between 1 and 2 seconds to process.
+Variations depended on the number of missing letters, with less letters missing resulting in a faster processing time;
 
 
 

@@ -7,8 +7,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Submit auto-generated strings
+ */
 public class StringSubmitter {
-
 
     public static void main(String[] args) {
 
@@ -18,8 +20,7 @@ public class StringSubmitter {
         final int stringLength = 100_000_000;
         //////////
 
-
-        Supplier<String> thisSupplier = new SampleStringGenerator.OrderSupplier()
+        Supplier<String> thisSupplier = new SampleStringGenerator.StringSupplier()
                 .withIncludeText(includeText)
                 .withTotalNumberOfOrders(numOrders)
                 .withStringLength(stringLength);
@@ -34,16 +35,12 @@ public class StringSubmitter {
 
         for (Map.Entry<String, String> mapEntry : inputToResults.entrySet()) {
             final String key = mapEntry.getKey();
-
             System.out.println("for " + key + "...");
             System.out.println(" --> " + mapEntry.getValue());
         }
 
         System.out.println("\n\n" + (System.currentTimeMillis() - start) + "ms to complete");
-
     }
-
-
 }
 
 
